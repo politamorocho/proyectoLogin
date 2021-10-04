@@ -7,19 +7,22 @@ import { AuthService } from './auth.service';
 export class AuthController {
 
 
-constructor(
-    private readonly authService: AuthService
-){}
+    constructor(
+        private readonly authService: AuthService
+    ) { }
 
     @UseGuards(AuthGuard('local'), AuthGuard('jwt'))
     @Post('/login')
-    async login(@Req() req:UsuarioInterface) {
+    async login(@Req() req: UsuarioInterface) {
 
-        const data= await this.authService.login(req);
-       // const{correo, claveUsuario}=req.Usuario;
-      //  req.usuario
+        const data = await this.authService.login(req);
+        // const{correo, claveUsuario}=req.Usuario;
+        //  req.usuario
 
-      return { msg: 'si se pudo login'}
+        return {
+            msg: 'si se pudo login',
+            data
+        }
     }
 
 
