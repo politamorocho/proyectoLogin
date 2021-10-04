@@ -1,10 +1,11 @@
-import mongoose from 'mongoose'
-const { Schema, model } = require('mongoose');
+//import mongoose from 'mongoose';
+import {Schema} from 'mongoose';
+// const { Schema, model } = require('mongoose');
 
 export const UsuarioSchema = new Schema({
     cedula: {
         type: String,
-        required: [true, 'la cedula es obligatoria'],
+        required: [false, 'la cedula es obligatoria'],
         unique: true
     },
     nombre: {
@@ -66,8 +67,8 @@ export const UsuarioSchema = new Schema({
 })
 
 UsuarioSchema.methods.toJSON= function(){
-    const {__v, estado, claveUsuario, fechaCreacion, ...data}= this.toObject();
+    const {__v, _id,estado, claveUsuario, fechaCreacion, ...data}= this.toObject();
     return data;
 }
 
-module.exports = mongoose.model('Usuario', UsuarioSchema)
+// module.exports = mongoose.model('Usuario', UsuarioSchema)

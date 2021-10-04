@@ -1,9 +1,11 @@
-import { IsEmail, IsOptional, MinLength } from 'class-validator';
+import { IsEmail, MinLength } from 'class-validator';
+import { isNull } from 'util';
 
 export class UsuarioDto {
 
-  // @MinLength(10)
-  cedula: string;  
+ // @MinLength(10)
+  cedula: string;
+  
 
   nombre: string;
 
@@ -11,7 +13,6 @@ export class UsuarioDto {
 
   razonSocial: string;
 
-  @IsOptional()
   @IsEmail()
   correo: string;
 
@@ -27,10 +28,10 @@ export class UsuarioDto {
 
   referenciaDomicilio: string;
 
-  @MinLength(6)
+  @MinLength(8)
   nombreUsuario: string;
 
-  @MinLength(6)
+  @MinLength(8)
   claveUsuario: string;
 
   estado: string;

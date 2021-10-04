@@ -1,9 +1,20 @@
+<<<<<<< HEAD
+import { IsEmail, MinLength } from 'class-validator';
+import { isNull } from 'util';
+
+export class UsuarioDto {
+
+ // @MinLength(10)
+  cedula: string;
+  
+=======
 import { IsEmail, IsOptional, MinLength } from 'class-validator';
 
 export class UsuarioDto {
 
   // @MinLength(10)
   cedula: string;  
+>>>>>>> paola
 
   nombre: string;
 
