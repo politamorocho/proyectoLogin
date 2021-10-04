@@ -2,9 +2,8 @@ import { IsEmail, MinLength } from 'class-validator';
 
 export class UsuarioDto {
 
-  @MinLength(10)
-  cedula: string;
-  
+  // @MinLength(10)
+  cedula: string;  
 
   nombre: string;
 

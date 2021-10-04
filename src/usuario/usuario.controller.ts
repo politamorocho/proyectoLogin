@@ -1,14 +1,10 @@
-import {
-    Controller, Get, HttpException, HttpStatus, Post,
-    Body, Res, Param, Delete
-} from '@nestjs/common';
+import {  Controller, Get, HttpException, HttpStatus, Post, Body, Res, Param, Delete } from '@nestjs/common';
 import { Response } from 'express';
-const { check } = require('express-validator');
-
 import { UsuarioDto } from './usuario.dto';
 import { UsuarioService } from './usuario.service';
 import { MongoIdPipe } from '../common/mongo-id.pipe';
 //import { IsMongoId, isMongoId } from 'class-validator';
+const { check } = require('express-validator');
 
 
 @Controller('usuario')
@@ -19,11 +15,9 @@ export class UsuarioController {
 
     @Post('/')
     async crearUsuario(@Body() usuario: UsuarioDto, @Res() response: Response) {
-
         const usuarioCreado = await this.UsuarioService.crearUsuario(usuario);
-
         if (usuarioCreado) {
-            response.status(200).json({
+            response.status( HttpStatus.OK).json({
                 data: usuarioCreado,
             });
         } else {
@@ -37,7 +31,6 @@ export class UsuarioController {
         }
 
     }
-
 
     @Get('/listar')
     async listarUsuarios(@Res() response: Response) {

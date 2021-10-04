@@ -4,13 +4,21 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { AuthModule } from './auth/auth.module';
-import { UsuarioService } from './usuario/usuario.service';
 import { MongooseModule } from '@nestjs/mongoose';
 
 
 @Module({
-  imports: [DatabaseModule, MongooseModule.forRoot(process.env.MONGODB_CONNECT), UsuarioModule, AuthModule],
+  imports: [
+    DatabaseModule, 
+    MongooseModule.forRoot(process.env.MONGODB_CONNECT), 
+    // MongooseModule.forRoot(mongodb://127.0.0.1:27017/app_ccl, {
+    //   useCreateIndex: true,
+    //   useNewUrlParse: true
+    // }),
+    UsuarioModule,
+    AuthModule
+  ],
   controllers: [AppController],
-  providers: [AppService, UsuarioService],
+  providers: [AppService],
 })
 export class AppModule {}
