@@ -21,9 +21,13 @@ export class UsuarioService {
     async crearUsuario(usuario: UsuarioDto): Promise<UsuarioInterface | boolean> {
 
         //verifica si existe el correo
-        const correoExiste = await this.model.exists({
+        const correoExiste = await this.model.findOne({
             correo: usuario.correo
         });
+
+        if (correoExiste){
+            return false
+        }
 
         //si no existe entonces crea el usuario
         if (!correoExiste) {
@@ -43,27 +47,50 @@ export class UsuarioService {
 
     //lista todos los usuarios
     async listarUsuarios() {
-        const usuariosLista = await this.model.find();
+
+        const query={estado:true};
+        const usuariosLista = await this.model.find(query);
+        
         return usuariosLista;
     }
 
     //lista la info de un usuario buscado por su MongoID
     async listarUsuarioID(usuarioID: string) {
 
-        const existeID = this.encontrarUsuariosPorID(usuarioID);
-        if (existeID) {
-            const infoUsuario = await this.model.find();
-            return infoUsuario
-        } else {
-            return existeID
+
+        const data = await this.model.findOne({_id:usuarioID});
+ 
+        if(!data){
+            return false
         }
+        if(!data.estado){
+            return false
+        }
+
+        return data;
+        // const existeID = this.model.findOne({_id:usuarioID});
+        // if (existeID) {
+        //     const infoUsuario = await this.model.find();
+        //     return infoUsuario
+        // } else {
+        //     return false
+        // }
 
     }
 
 
     //actualizar usuario
     async actualizarUsuario(usuarioActualizado: UsuarioDto | any) {
-        const existeID = this.encontrarUsuariosPorID(usuarioActualizado._id);
+        const existeID= await this.model.findOne({_id:usuarioActualizado._id})
+        // const existeID = this.encontrarUsuariosPorID(usuarioActualizado._id);
+
+        if(!existeID){
+            return false
+        }
+
+        if (!existeID.estado){
+            return false
+        }
 
         if (existeID) {
 
@@ -71,9 +98,7 @@ export class UsuarioService {
                 usuarioActualizado._id, usuarioActualizado, { new: true }
             )
             return actualizado
-        } else {
-            return false
-        }
+        } 
 
     }
 

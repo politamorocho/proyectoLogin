@@ -1,4 +1,4 @@
-// import mongoose from 'mongoose';
+//import mongoose from 'mongoose';
 import {Schema} from 'mongoose';
 // const { Schema, model } = require('mongoose');
 
@@ -67,7 +67,7 @@ export const UsuarioSchema = new Schema({
 })
 
 UsuarioSchema.methods.toJSON= function(){
-    const {__v, estado, claveUsuario, fechaCreacion, ...data}= this.toObject();
+    const {__v, _id,estado, claveUsuario, fechaCreacion, ...data}= this.toObject();
     return data;
 }
 

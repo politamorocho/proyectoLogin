@@ -1,4 +1,4 @@
-import {  Controller, Get, HttpException, HttpStatus, Post, Body, Res, Param, Delete } from '@nestjs/common';
+import {  Controller, Get, HttpException, HttpStatus, Post, Body, Res, Param, Delete, Put } from '@nestjs/common';
 import { Response } from 'express';
 import { UsuarioDto } from './usuario.dto';
 import { UsuarioService } from './usuario.service';
@@ -32,7 +32,7 @@ export class UsuarioController {
 
     }
 
-    @Get('/listar')
+    @Get('listar')
     async listarUsuarios(@Res() response: Response) {
 
 
@@ -44,7 +44,7 @@ export class UsuarioController {
         })
     }
 
-    @Get('/:id')
+    @Get(':id')
     async obtenerUsuario(@Param('id', MongoIdPipe) id, @Res() response: Response) {
 
 
@@ -55,16 +55,33 @@ export class UsuarioController {
                 data: usuario,
             });
         } else {
-            throw new HttpException(
-                {
+            throw new HttpException({
                     status: HttpStatus.BAD_REQUEST,
-                    error: 'datos incorrectos',
+                    error: 'El usuario requerido no existe hable con el admin',
                 },
                 HttpStatus.BAD_REQUEST,
             );
         }
     }
 
+    // @Put('/actualizar')
+    // async actualizarUsuario(@Body() usuario: UsuarioDto, @Res() response: Response){
+    //     const usuarioAct= await this.UsuarioService.actualizarUsuario();
+    //     if(usuarioAct){
+    //         response.status(HttpStatus.OK).json({
+    //             data: usuarioAct,
+    //           });
+    //     } else {
+    //         throw new HttpException(
+    //             {
+    //                 status: HttpStatus.BAD_REQUEST,
+    //                 error: 'El usuario requerido no existe hable con el admin',
+    //             },
+    //             HttpStatus.BAD_REQUEST,
+    //         );
+    //     }
+
+    // }
 
     @Delete('/:id')
     async borradoLOgico(@Param('id', MongoIdPipe) id, @Res() response: Response) {

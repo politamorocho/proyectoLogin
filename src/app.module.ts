@@ -10,11 +10,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 @Module({
   imports: [
     DatabaseModule, 
-    MongooseModule.forRoot(process.env.MONGODB_CONNECT), 
-    // MongooseModule.forRoot(mongodb://127.0.0.1:27017/app_ccl, {
-    //   useCreateIndex: true,
-    //   useNewUrlParse: true
-    // }),
+    // MongooseModule.forRoot(process.env.MONGODB_CONNECT), 
+    MongooseModule.forRoot('mongodb+srv://usuario_db_1:keadkeb3r5Tr3z9N@cluster-usuario.jylct.mongodb.net/test?authSource=admin&replicaSet=atlas-czioze-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true', {
+      // useCreateIndex: true,
+      // useNewUrlParse: true
+    }),
     UsuarioModule,
     AuthModule
   ],
