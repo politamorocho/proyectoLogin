@@ -5,6 +5,7 @@ import { DatabaseModule } from './database/database.module';
 import { UsuarioModule } from './usuario/usuario.module';
 import { AuthModule } from './auth/auth.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { RolModule } from './rol/rol.module';
 
 
 @Module({
@@ -16,7 +17,8 @@ import { MongooseModule } from '@nestjs/mongoose';
       // useNewUrlParse: true
     }),
     UsuarioModule,
-    AuthModule
+    AuthModule,
+    RolModule
   ],
   controllers: [AppController],
   providers: [AppService],

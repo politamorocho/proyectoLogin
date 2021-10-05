@@ -1,9 +1,11 @@
-import {  Controller, Get, HttpException, HttpStatus, Post, Body, Res, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus, Post, Body, Res, Param, Delete, Put, Req, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { UsuarioDto } from './usuario.dto';
 import { UsuarioService } from './usuario.service';
 import { MongoIdPipe } from '../common/mongo-id.pipe';
 //import { IsMongoId, isMongoId } from 'class-validator';
+import { UsuarioInterface } from 'src/usuario/usuario.interface';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth-guard';
 const { check } = require('express-validator');
 
 
@@ -44,6 +46,7 @@ export class UsuarioController {
         })
     }
 
+    @UseGuards(JwtAuthGuard)
     @Get(':id')
     async obtenerUsuario(@Param('id', MongoIdPipe) id, @Res() response: Response) {
 
@@ -102,6 +105,29 @@ export class UsuarioController {
         }
 
     }
+
+    // @Post('/validar')
+    // async validarUsuario(@Body() usuario: UsuarioInterface, @Res() response: Response) {
+
+    //     const {correo, claveUsuario} = usuario;
+    //     const usuarioValidado = await this.UsuarioService.validarUsuario(correo, claveUsuario);
+    //     if (usuarioValidado) {
+    //         response.status( HttpStatus.OK).json({
+    //             data: usuarioValidado,
+    //             msg: 'llega hasta aqui'
+    //         });
+    //     } else {
+    //         throw new HttpException(
+    //             {
+    //                 status: HttpStatus.BAD_REQUEST,
+    //                 error: 'datos no validos para validar',
+    //             },
+    //             HttpStatus.BAD_REQUEST,
+    //         );
+    //     }
+
+    // }
+    
 
 }
 

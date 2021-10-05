@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { UsuarioInterface } from './usuario.interface';
 import { Model } from 'mongoose';
-import {InjectModel}  from '@nestjs/mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 
 import { UsuarioDto } from './usuario.dto';
@@ -25,7 +25,7 @@ export class UsuarioService {
             correo: usuario.correo
         });
 
-        if (correoExiste){
+        if (correoExiste) {
             return false
         }
 
@@ -48,9 +48,9 @@ export class UsuarioService {
     //lista todos los usuarios
     async listarUsuarios() {
 
-        const query={estado:true};
+        const query = { estado: true };
         const usuariosLista = await this.model.find(query);
-        
+
         return usuariosLista;
     }
 
@@ -58,12 +58,12 @@ export class UsuarioService {
     async listarUsuarioID(usuarioID: string) {
 
 
-        const data = await this.model.findOne({_id:usuarioID});
- 
-        if(!data){
+        const data = await this.model.findOne({ _id: usuarioID });
+
+        if (!data) {
             return false
         }
-        if(!data.estado){
+        if (!data.estado) {
             return false
         }
 
@@ -81,14 +81,14 @@ export class UsuarioService {
 
     //actualizar usuario
     async actualizarUsuario(usuarioActualizado: UsuarioDto | any) {
-        const existeID= await this.model.findOne({_id:usuarioActualizado._id})
+        const existeID = await this.model.findOne({ _id: usuarioActualizado._id })
         // const existeID = this.encontrarUsuariosPorID(usuarioActualizado._id);
 
-        if(!existeID){
+        if (!existeID) {
             return false
         }
 
-        if (!existeID.estado){
+        if (!existeID.estado) {
             return false
         }
 
@@ -98,26 +98,26 @@ export class UsuarioService {
                 usuarioActualizado._id, usuarioActualizado, { new: true }
             )
             return actualizado
-        } 
+        }
 
     }
 
     //borrar usuario logico
     async borradoLogico(usuarioID: string) {
-        const existeID = await this.model.findOne({_id:usuarioID});
+        const existeID = await this.model.findOne({ _id: usuarioID });
 
-        if(!existeID){
+        if (!existeID) {
             return false
         }
-        if(!existeID.estado){
+        if (!existeID.estado) {
             return false
         }
 
 
-        if (existeID&&existeID.estado===true) {
+        if (existeID && existeID.estado === true) {
             const usuarioBorrado = await this.model.findByIdAndUpdate(usuarioID, { estado: false }, { new: true });
             return usuarioBorrado
-        } 
+        }
 
     }
 
@@ -135,29 +135,39 @@ export class UsuarioService {
         })
     }
 
-    async validarUsuario(correo: string, clave: string) {
+    async validarUsuario(correo: string, claveUsuario: string) {
 
+        //console.log(correo, claveUsuario, 'del usuario service');
         //verificar que exista el correo
         const existeUsuario = await this.model.findOne({
             correo
         })
 
+        if(!existeUsuario){
+            return false
+        }
 
-        if (!existeUsuario) {
+        //console.log('estado del usuario service', existeUsuario.estado)
+        //si el estado es false
+        if (!existeUsuario.estado) {
             return false;
         }
 
-        //verificar el estado
-        if (!existeUsuario.estado) {
+        //compara la clave
+        const claveValida= await bcryptjs.compareSync(claveUsuario, existeUsuario.claveUsuario);  
+       // console.log('la clave es:' ,  claveValida);
+        if (!claveValida){
             return false
         }
 
-        const claveValida = bcryptjs.compareSync(clave, existeUsuario.claveUsuario);
-        if (!claveValida) {
-            return false
-        }
+        
+        // if (existeUsuario && existeUsuario.estado === true&&claveValida==true){
+        //     return existeUsuario;
+        // }
 
-        return existeUsuario;
+       // console.log(existeUsuario);
+        return existeUsuario
+        
 
     }
 }

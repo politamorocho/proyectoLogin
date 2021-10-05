@@ -7,30 +7,51 @@ import { UsuarioService } from '../usuario/usuario.service';
 export class AuthService {
 
     constructor(
-        private readonly UsuarioService:UsuarioService,
-        private readonly jwtService:JwtService
-        )
-    {}
+        private readonly UsuarioService: UsuarioService,
+        private readonly jwtService: JwtService
+    ) { }
 
 
-    validarUsuario(email:string,claveUs:string):Promise<any>{
-        const usuario=this.UsuarioService.validarUsuario(email, claveUs);
+    async validarUsuario(correo: string, claveUsuario: string) {
+       // console.log(correo, claveUsuario, 'del authservice');
+        const usuario = await this.UsuarioService.validarUsuario(correo, claveUsuario);
 
-        if(!usuario) throw new UnauthorizedException();
+
+        if (!usuario) {
+            return false
+        }
+
+
+        //console.log(usuario, 'usuario que esta en el validar auth service')
         return usuario
-  
-}
 
-login(usuario:UsuarioInterface ){
-    const {_id, ...rest} = usuario;
-
-    const payload={ sub:_id};
-
-    return {
-        ...rest,
-        accessToken: this.jwtService.sign(payload)
     }
 
-}
+    async login(correo: string, claveUsuario: string) {
+
+
+        const usuario = await this.validarUsuario(correo, claveUsuario);
+        // console.log('login auth service', usuario);
+        if (!usuario) {
+            return false
+        }
+
+
+        const { _id, ...resto } = usuario;
+        // console.log('id:',_id);
+
+        const payload = { sub: _id };
+
+
+        return {
+            usuario,
+            accessToken: this.jwtService.sign(payload),
+        }
+
+        // console.log(respuesta, 'del login auth serice')
+
+
+
+    }
 
 }
