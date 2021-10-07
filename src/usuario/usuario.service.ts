@@ -1,10 +1,16 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UsuarioInterface } from './usuario.interface';
-import { Model } from 'mongoose';
+import { Model, Mongoose } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-
+const mongoose = require('mongoose');
+var ObjectId = require('mongodb').ObjectId;
+import { isMongoId } from 'class-validator';
+import { Schema } from 'mongoose';
 
 import { UsuarioDto } from './usuario.dto';
+
+import { RolService } from 'src/rol/rol.service';
+
 
 const bcryptjs = require('bcryptjs');
 
@@ -13,8 +19,10 @@ const bcryptjs = require('bcryptjs');
 export class UsuarioService {
 
     constructor(
+
         //private readonly model: Model<UsuarioInterface>
         @InjectModel('Usuario') private model: Model<UsuarioInterface>,
+        private readonly rolService: RolService
     ) { }
 
 
@@ -25,11 +33,31 @@ export class UsuarioService {
             correo: usuario.correo
         });
 
+        //si el correo existe, no se puede  crear el usuario
         if (correoExiste) {
             return false
         }
 
-        //si no existe entonces crea el usuario
+        //preguntar si el rol es un  id valid de mongo
+        if (!isMongoId(usuario.rol)) {
+            return false
+        }
+
+
+        //si es un mongoid valido, verifica que exista
+        const rolId = await this.rolService.verificaRolId(usuario.rol);
+        if (!rolId) {
+            return false
+        }
+
+
+        //pregunta si es un rol activo
+        const rolActivo = await this.rolService.verificaRolActivo(usuario.rol);
+        if (!rolActivo) {
+            return false
+        }
+
+        //si no existe el correo y existe el rol, entonces crea el usuario
         if (!correoExiste) {
 
             //encriptar la clave
@@ -38,6 +66,8 @@ export class UsuarioService {
 
             //guardar en bd
             const resultado = await new this.model(usuario).save();
+
+
             return resultado;
         } else {
             return correoExiste;
@@ -45,20 +75,32 @@ export class UsuarioService {
 
     }
 
-    //lista todos los usuarios
+    //lista todos los usuarios con estado true-activo
     async listarUsuarios() {
 
         const query = { estado: true };
-        const usuariosLista = await this.model.find(query);
+        const usuariosLista = await this.model.find(query)
+            .populate('rol', 'nombreRol')
+
+        return usuariosLista;
+    }
+
+    //listar todos los usuarios con estado true o false
+    async listarTodos() {
+
+        //const query = { estado: true };
+        const usuariosLista = await this.model.find()
+            .populate('rol', '-_id -__v')
 
         return usuariosLista;
     }
 
     //lista la info de un usuario buscado por su MongoID
-    async listarUsuarioID(usuarioID: string) {
+    async listarUsuarioID(usuarioID: string): Promise<UsuarioInterface | boolean> {
 
 
-        const data = await this.model.findOne({ _id: usuarioID });
+        const data = await this.model.findOne({ _id: usuarioID })
+            .populate('rol', '-_id -__v')
 
         if (!data) {
             return false
@@ -68,39 +110,74 @@ export class UsuarioService {
         }
 
         return data;
-        // const existeID = this.model.findOne({_id:usuarioID});
-        // if (existeID) {
-        //     const infoUsuario = await this.model.find();
-        //     return infoUsuario
-        // } else {
-        //     return false
-        // }
 
     }
 
 
     //actualizar usuario
-    async actualizarUsuario(usuarioActualizado: UsuarioDto | any) {
-        const existeID = await this.model.findOne({ _id: usuarioActualizado._id })
-        // const existeID = this.encontrarUsuariosPorID(usuarioActualizado._id);
+    async actualizarUsuario(usuarioActualizado: UsuarioDto, id: string): Promise<UsuarioInterface | boolean> {
+        const existeID = await this.model.findOne({ _id: id });
 
+
+        //pregunta si existe el id que llega, si no existe sale.
         if (!existeID) {
             return false
         }
 
+        //pregunta el estado del usuario que llega, si es false sale.
         if (!existeID.estado) {
             return false
         }
 
-        if (existeID) {
+        //verifica si existe el correo, si existe no puede actualizar
+        const correoExiste = await this.model.findOne({
+            correo: usuarioActualizado.correo
+        });
 
-            const actualizado = await this.model.findByIdAndUpdate(
-                usuarioActualizado._id, usuarioActualizado, { new: true }
-            )
-            return actualizado
+        if (correoExiste) {
+            return false
         }
 
+        //verifica el id de rol que sea valido
+        if (!isMongoId(usuarioActualizado.rol)) {
+            return false
+        }
+
+        //si es un mongoid valido, verifica que exista
+        const rolId = await this.rolService.verificaRolId(usuarioActualizado.rol);
+        if (!rolId) {
+            return false
+        }
+
+        //pregunta si es un rol activo
+        const rolActivo = await this.rolService.verificaRolActivo(usuarioActualizado.rol);
+        if (!rolActivo) {
+            return false
+        }
+
+        const usuActEntity = new this.model(usuarioActualizado);
+
+        const { rol, claveUsuario, ...data } = usuarioActualizado
+        //console.log('data es', data)
+
+        usuActEntity.rol = mongoose.Types.ObjectId(usuarioActualizado.rol);
+
+        const salt = bcryptjs.genSaltSync(10);
+        usuActEntity.claveUsuario = bcryptjs.hashSync(usuarioActualizado.claveUsuario, salt);
+
+
+        const { _id, ...resto } = usuActEntity
+
+        console.log('usuario Entity: ', usuActEntity)
+
+        const actualizado = existeID.overwrite(usuActEntity);
+        actualizado.save()
+        // const actualizado = await this.model.findByIdAndUpdate (id,  resto, {new:true});
+
+
+        return actualizado
     }
+
 
     //borrar usuario logico
     async borradoLogico(usuarioID: string) {
@@ -137,37 +214,30 @@ export class UsuarioService {
 
     async validarUsuario(correo: string, claveUsuario: string) {
 
-        //console.log(correo, claveUsuario, 'del usuario service');
         //verificar que exista el correo
         const existeUsuario = await this.model.findOne({
             correo
         })
 
-        if(!existeUsuario){
+        if (!existeUsuario) {
             return false
         }
 
-        //console.log('estado del usuario service', existeUsuario.estado)
         //si el estado es false
         if (!existeUsuario.estado) {
             return false;
         }
 
         //compara la clave
-        const claveValida= await bcryptjs.compareSync(claveUsuario, existeUsuario.claveUsuario);  
-       // console.log('la clave es:' ,  claveValida);
-        if (!claveValida){
+        const claveValida = await bcryptjs.compareSync(claveUsuario, existeUsuario.claveUsuario);
+
+        if (!claveValida) {
             return false
         }
 
-        
-        // if (existeUsuario && existeUsuario.estado === true&&claveValida==true){
-        //     return existeUsuario;
-        // }
-
-       // console.log(existeUsuario);
         return existeUsuario
-        
 
     }
+
+
 }

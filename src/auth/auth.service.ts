@@ -29,18 +29,16 @@ export class AuthService {
 
     async login(correo: string, claveUsuario: string) {
 
-
         const usuario = await this.validarUsuario(correo, claveUsuario);
         // console.log('login auth service', usuario);
         if (!usuario) {
             return false
         }
 
-
-        const { _id, ...resto } = usuario;
+        const { _id, rol, ...resto } = usuario;
         // console.log('id:',_id);
 
-        const payload = { sub: _id };
+        const payload= { sub: _id, rol};
 
 
         return {
@@ -50,8 +48,15 @@ export class AuthService {
 
         // console.log(respuesta, 'del login auth serice')
 
-
-
     }
+
+    // async generateAccessToken(name: string) {
+    //     const user = await this.UsuarioService.listarUsuarioID(name);
+    //     const payload = { userId: user._id};
+    //     return {
+    //       access_token: this.jwtService.sign(payload),
+    //     };
+    //   }
+
 
 }

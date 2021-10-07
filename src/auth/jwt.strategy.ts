@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
+import { UsuarioInterface } from "src/usuario/usuario.interface";
 import { UsuarioService } from '../usuario/usuario.service';
 
 
@@ -16,10 +17,12 @@ export class JwtStrategy extends PassportStrategy(Strategy){
          });
      }
 
-     async validate (payload: any){
-         const {sub:_id}=payload;
+     async validate (payload: any): Promise<UsuarioInterface|boolean>{
+         const {sub:_id,rol}=payload;
 
-         return await this.UsuarioService.listarUsuarioID(_id)
+         const usuario= await this.UsuarioService.listarUsuarioID(_id)
+         console.log(usuario)
+         return usuario;
      }
 
 }

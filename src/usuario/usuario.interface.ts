@@ -1,4 +1,4 @@
-import { Document } from "mongoose";
+import { Document,Schema } from "mongoose";
 
 export interface UsuarioInterface extends Document {
 
@@ -7,7 +7,7 @@ export interface UsuarioInterface extends Document {
   apellido: string;
   razonSocial: string;
   correo: string;
-  rol: string;
+  rol: Schema.Types.ObjectId;
   provincia: string;
   ciudad: string;
   direccion: string;

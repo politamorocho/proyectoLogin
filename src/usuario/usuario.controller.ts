@@ -1,5 +1,5 @@
 import { Controller, Get, HttpException, HttpStatus, Post, Body, Res, Param, Delete, Put, Req, UseGuards } from '@nestjs/common';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { UsuarioDto } from './usuario.dto';
 import { UsuarioService } from './usuario.service';
 import { MongoIdPipe } from '../common/mongo-id.pipe';
@@ -26,7 +26,7 @@ export class UsuarioController {
             throw new HttpException(
                 {
                     status: HttpStatus.BAD_REQUEST,
-                    error: 'correo ya registrado',
+                    error: 'correo ya registrado o rol no permitido',
                 },
                 HttpStatus.BAD_REQUEST,
             );
@@ -34,10 +34,10 @@ export class UsuarioController {
 
     }
 
-    @Get('listar')
+    // @UseGuards(JwtAuthGuard)
+    //lista usuarios activos
+    @Get('/')
     async listarUsuarios(@Res() response: Response) {
-
-
 
         const listaUsuarios = await this.UsuarioService.listarUsuarios();
 
@@ -46,8 +46,23 @@ export class UsuarioController {
         })
     }
 
-    @UseGuards(JwtAuthGuard)
-    @Get(':id')
+    // @UseGuards(JwtAuthGuard)
+    //lista todos los usuarios activos e inactivos
+    @Get('/todos')
+    async listarTodos(@Res() response: Response) {
+
+        const listaUsuarios = await this.UsuarioService.listarTodos();
+
+        response.status(HttpStatus.OK).json({
+            data: listaUsuarios
+        })
+    }
+
+
+
+    // @UseGuards(JwtAuthGuard)
+    //muestra los datos de un usuario por id
+    @Get('/:id')
     async obtenerUsuario(@Param('id', MongoIdPipe) id, @Res() response: Response) {
 
 
@@ -67,25 +82,27 @@ export class UsuarioController {
         }
     }
 
-    // @Put('/actualizar')
-    // async actualizarUsuario(@Body() usuario: UsuarioDto, @Res() response: Response){
-    //     const usuarioAct= await this.UsuarioService.actualizarUsuario();
-    //     if(usuarioAct){
-    //         response.status(HttpStatus.OK).json({
-    //             data: usuarioAct,
-    //           });
-    //     } else {
-    //         throw new HttpException(
-    //             {
-    //                 status: HttpStatus.BAD_REQUEST,
-    //                 error: 'El usuario requerido no existe hable con el admin',
-    //             },
-    //             HttpStatus.BAD_REQUEST,
-    //         );
-    //     }
+    // @UseGuards(JwtAuthGuard)
+    @Put('/:id')
+    async actualizarUsuario(@Param('id', MongoIdPipe) id, @Body() usuario: UsuarioDto, @Res() response: Response){
+        const usuarioAct= await this.UsuarioService.actualizarUsuario(usuario, id);
+        if(usuarioAct){
+            response.status(HttpStatus.OK).json({
+                data: usuarioAct,
+              });
+        } else {
+            throw new HttpException(
+                {
+                    status: HttpStatus.BAD_REQUEST,
+                    error: 'El usuario requerido no existe o el correo ya esta siendo usado',
+                },
+                HttpStatus.BAD_REQUEST,
+            );
+        }
 
-    // }
+    }
 
+    // @UseGuards(JwtAuthGuard)
     @Delete('/:id')
     async borradoLOgico(@Param('id', MongoIdPipe) id, @Res() response: Response) {
         const usuarioEliminado = await this.UsuarioService.borradoLogico(id);
