@@ -120,10 +120,10 @@ export class RolService {
             return false
         }
 
-        // console.log(rolExiste, 'del rol service');
-        // const {_id} = rolExiste;
-        // console.log(_id, 'id del rol en rolservice')
-        //const idRol=ObjectId(rolExiste._id).toString();
+        if(rolExiste.estado === 'INACTIVO'){
+            return false
+        }
+
         return rolExiste;
     }
 
@@ -144,6 +144,16 @@ export class RolService {
         }
 
         return true
+    }
+
+    async verificaRolActivo2(id:string){
+        const rolExiste = await this.model.findById({ _id: id });
+        
+        if(rolExiste.estado === 'INACTIVO'){
+            return false
+        }
+
+        return rolExiste
     }
 
 

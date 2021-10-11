@@ -28,7 +28,7 @@ export class AuthController {
         // const{correo, claveUsuario}=req.Usuario;
         //  req.usuario
 
-        console.log(data);
+        //console.log(data);
         return data;
         // if (data) {
         //     return {

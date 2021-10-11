@@ -168,7 +168,7 @@ export class UsuarioService {
 
         const { _id, ...resto } = usuActEntity
 
-        console.log('usuario Entity: ', usuActEntity)
+      //  console.log('usuario Entity: ', usuActEntity)
 
         const actualizado = existeID.overwrite(usuActEntity);
         actualizado.save()
@@ -238,6 +238,25 @@ export class UsuarioService {
         return existeUsuario
 
     }
+
+ async listaUsuarioPorRol(termino:string){
+
+     
+     const rol = await this.rolService.verificaSiExisteRol(termino);
+     console.log(rol, 'el rol es ')
+     if(!rol){
+         return false
+     }
+
+     const usuarios= await this.model.find({
+         estado:true,
+         $and:[{rol: rol._id}]
+     }). populate('rol', 'nombreRol')
+
+     console.log(usuarios,'usuarios son');
+     return usuarios;
+
+ }
 
 
 }

@@ -7,6 +7,7 @@ import { MongoIdPipe } from '../common/mongo-id.pipe';
 import { UsuarioInterface } from 'src/usuario/usuario.interface';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth-guard';
 const { check } = require('express-validator');
+const jwt = require('jsonwebtoken');
 
 
 @Controller('usuario')
@@ -34,7 +35,7 @@ export class UsuarioController {
 
     }
 
-    // @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     //lista usuarios activos
     @Get('/')
     async listarUsuarios(@Res() response: Response) {
@@ -46,7 +47,8 @@ export class UsuarioController {
         })
     }
 
-    // @UseGuards(JwtAuthGuard)
+    
+    @UseGuards(JwtAuthGuard)
     //lista todos los usuarios activos e inactivos
     @Get('/todos')
     async listarTodos(@Res() response: Response) {
@@ -60,13 +62,16 @@ export class UsuarioController {
 
 
 
-    // @UseGuards(JwtAuthGuard)
+    @UseGuards(JwtAuthGuard)
     //muestra los datos de un usuario por id
-    @Get('/:id')
-    async obtenerUsuario(@Param('id', MongoIdPipe) id, @Res() response: Response) {
+    @Get('/one')
+    async obtenerUsuario(@Req() req: Request,  @Res() response: Response) {
 
+        const token= req.header('token-s');
+        const { sub, rol } = jwt.verify(token, process.env.SECRET_KEY)
+        
 
-        const usuario = await this.UsuarioService.listarUsuarioID(id);
+        const usuario = await this.UsuarioService.listarUsuarioID(sub);
 
         if (usuario) {
             response.status(HttpStatus.OK).json({
@@ -82,10 +87,14 @@ export class UsuarioController {
         }
     }
 
-    // @UseGuards(JwtAuthGuard)
-    @Put('/:id')
-    async actualizarUsuario(@Param('id', MongoIdPipe) id, @Body() usuario: UsuarioDto, @Res() response: Response){
-        const usuarioAct= await this.UsuarioService.actualizarUsuario(usuario, id);
+    @UseGuards(JwtAuthGuard)
+    @Put('/')
+    async actualizarUsuario(@Req() req: Request, @Body() usuario: UsuarioDto, @Res() response: Response){
+
+        const token= req.header('token-s');
+        const { sub, rol } = jwt.verify(token, process.env.SECRET_KEY)
+        
+        const usuarioAct= await this.UsuarioService.actualizarUsuario(usuario, sub);
         if(usuarioAct){
             response.status(HttpStatus.OK).json({
                 data: usuarioAct,
@@ -102,10 +111,15 @@ export class UsuarioController {
 
     }
 
-    // @UseGuards(JwtAuthGuard)
-    @Delete('/:id')
-    async borradoLOgico(@Param('id', MongoIdPipe) id, @Res() response: Response) {
-        const usuarioEliminado = await this.UsuarioService.borradoLogico(id);
+    @UseGuards(JwtAuthGuard)
+    @Delete('/')
+    async borradoLogico(@Req() req: Request, @Res() response: Response) {
+
+        const token= req.header('token-s');
+        const { sub, rol } = jwt.verify(token, process.env.SECRET_KEY)
+        
+
+        const usuarioEliminado = await this.UsuarioService.borradoLogico(sub);
         if (usuarioEliminado) {
             response.status(HttpStatus.OK).json({
                 data: usuarioEliminado,
@@ -123,28 +137,31 @@ export class UsuarioController {
 
     }
 
-    // @Post('/validar')
-    // async validarUsuario(@Body() usuario: UsuarioInterface, @Res() response: Response) {
+   // @UseGuards(JwtAuthGuard)
+    //lista usuarios por rol
+    @Get('/:rol')
+    async listarUsuariosPorRol(@Param('rol') rol: string, @Res() response: Response){
+       // console.log(rol);
+        const lista = await this.UsuarioService.listaUsuarioPorRol(rol);
 
-    //     const {correo, claveUsuario} = usuario;
-    //     const usuarioValidado = await this.UsuarioService.validarUsuario(correo, claveUsuario);
-    //     if (usuarioValidado) {
-    //         response.status( HttpStatus.OK).json({
-    //             data: usuarioValidado,
-    //             msg: 'llega hasta aqui'
-    //         });
-    //     } else {
-    //         throw new HttpException(
-    //             {
-    //                 status: HttpStatus.BAD_REQUEST,
-    //                 error: 'datos no validos para validar',
-    //             },
-    //             HttpStatus.BAD_REQUEST,
-    //         );
-    //     }
+        if (lista) {
+            response.status(HttpStatus.OK).json({
+                data: lista,
+                messsage: 'listado obtenido'
+            });
+        } else {
+            throw new HttpException(
+                {
+                    status: HttpStatus.BAD_REQUEST,
+                    error: 'no se pudo obtener la lista',
+                },
+                HttpStatus.BAD_REQUEST,
+            );
+        }
+    }
 
-    // }
-    
+
+
 
 }
 
