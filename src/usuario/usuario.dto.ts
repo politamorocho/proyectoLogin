@@ -1,9 +1,9 @@
-import { IsEmail, IsOptional, MinLength } from 'class-validator';
+import { IsEmail, IsMongoId, IsOptional, MinLength } from 'class-validator';
+import { PartialType } from '@nestjs/mapped-types';
 
 export class UsuarioDto {
-
   // @MinLength(10)
-  cedula: string;  
+  cedula: string;
 
   nombre: string;
 
@@ -15,6 +15,7 @@ export class UsuarioDto {
   @IsEmail()
   correo: string;
 
+  @IsMongoId()
   rol: string;
 
   provincia: string;
@@ -35,7 +36,7 @@ export class UsuarioDto {
 
   estado: string;
 
-  fechaCreacion: Date;
-
-
+  // fechaCreacion: Date;
 }
+
+export class ActualizarUsuarioDto extends PartialType(UsuarioDto) {}
